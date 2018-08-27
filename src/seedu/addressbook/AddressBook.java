@@ -14,14 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /*
  * NOTE : =============================================================
@@ -444,13 +438,13 @@ public class AddressBook {
 
     /**
      * Finds and lists all persons in address book whose name contains any of the argument keywords.
-     * Keyword matching is case sensitive.
+     * Keyword matching is case insensitive.
      *
      * @param commandArgs full command args string from the user
      * @return feedback display message for the operation result
      */
     private static String executeFindPersons(String commandArgs) {
-        final Set<String> keywords = extractKeywordsFromFindPersonArgs(commandArgs);
+        final Set<String> keywords = extractKeywordsFromFindPersonArgs(commandArgs.toUpperCase());
         final ArrayList<String[]> personsFound = getPersonsWithNameContainingAnyKeyword(keywords);
         showToUser(personsFound);
         return getMessageForPersonsDisplayedSummary(personsFound);
@@ -479,13 +473,13 @@ public class AddressBook {
     /**
      * Retrieves all persons in the full model whose names contain some of the specified keywords.
      *
-     * @param keywords for searching
+     * @param keywords capitalised keywords for case insensitive searching
      * @return list of persons in full model with name containing some of the keywords
      */
     private static ArrayList<String[]> getPersonsWithNameContainingAnyKeyword(Collection<String> keywords) {
         final ArrayList<String[]> matchedPersons = new ArrayList<>();
         for (String[] person : getAllPersonsInAddressBook()) {
-            final Set<String> wordsInName = new HashSet<>(splitByWhitespace(getNameFromPerson(person)));
+            final Set<String> wordsInName = new HashSet<>(stringListToUpper(splitByWhitespace(getNameFromPerson(person))));
             if (!Collections.disjoint(wordsInName, keywords)) {
                 matchedPersons.add(person);
             }
@@ -1162,6 +1156,20 @@ public class AddressBook {
      */
     private static ArrayList<String> splitByWhitespace(String toSplit) {
         return new ArrayList<>(Arrays.asList(toSplit.trim().split("\\s+")));
+    }
+
+    /**
+     * Capitalises a list of strings.
+     *
+     * @param stringList the list of strings to be capitalised
+     * @return a List<String> object containing the capitalised strings in the input list in the same order.
+     */
+    private static List<String> stringListToUpper(List<String> stringList) {
+        List<String> newList = new ArrayList<>(stringList)
+                .stream()
+                .map(s -> s.toUpperCase())
+                .collect(Collectors.toList());
+        return newList;
     }
 
 }
